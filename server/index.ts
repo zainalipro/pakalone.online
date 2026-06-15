@@ -281,7 +281,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
     }
 
     const host = (settings.smtp_host || "").trim();
-    const port = parseInt((settings.smtp_port || "587").trim(), 10);
+    const port = parseInt((settings.smtp_port || "465").trim(), 10);
     // Google App Passwords are shown in 4x4 blocks separated by spaces (e.g. `abcd efgh ijkl mnop`).
     // Automatically stripping all spaces ensures copy-paste works flawlessly!
     const pass = (settings.smtp_pass || "").replace(/\s+/g, "");

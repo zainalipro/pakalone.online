@@ -193,11 +193,11 @@ export async function updateDatabasePool(newUrl: string): Promise<{ success: boo
 
 let memorySettings: Record<string, string> = {
   smtp_host: 'smtp.gmail.com',
-  smtp_port: '587',
-  smtp_secure: 'false',
+  smtp_port: '465',
+  smtp_secure: 'true',
   smtp_user: 'admin@gmail.com',
   smtp_pass: '',
-  smtp_from: 'Pakalone Slots <admin@gmail.com>',
+  smtp_from: 'Pakalone Games <admin@gmail.com>',
   community_facebook: 'https://facebook.com',
   community_twitter: 'https://twitter.com',
   community_telegram: 'https://t.me',
@@ -728,11 +728,11 @@ export async function fetchAdminSettings() {
   
   const defaults: Record<string, string> = {
     smtp_host: 'smtp.gmail.com',
-    smtp_port: '587',
-    smtp_secure: 'false',
+    smtp_port: '465',
+    smtp_secure: 'true',
     smtp_user: 'admin@gmail.com',
     smtp_pass: '',
-    smtp_from: 'Pakalone Slots <admin@gmail.com>',
+    smtp_from: 'Pakalone Games <admin@gmail.com>',
     community_facebook: 'https://facebook.com',
     community_twitter: 'https://twitter.com',
     community_telegram: 'https://t.me',

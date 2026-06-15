@@ -36,8 +36,8 @@ export default function AdminDashboard() {
   // SMTP and portal customization settings state
   const [smtpSettings, setSmtpSettings] = useState({
     smtp_host: 'smtp.gmail.com',
-    smtp_port: '587',
-    smtp_secure: 'false',
+    smtp_port: '465',
+    smtp_secure: 'true',
     smtp_user: '',
     smtp_pass: '',
     smtp_from: '',
@@ -271,8 +271,8 @@ export default function AdminDashboard() {
         const data = await res.json();
         setSmtpSettings(data || {
           smtp_host: 'smtp.gmail.com',
-          smtp_port: '587',
-          smtp_secure: 'false',
+          smtp_port: '465',
+          smtp_secure: 'true',
           smtp_user: '',
           smtp_pass: '',
           smtp_from: '',
@@ -616,9 +616,9 @@ export default function AdminDashboard() {
     setSmtpSettings(prev => ({
       ...prev,
       smtp_host: 'smtp.gmail.com',
-      smtp_port: '587',
-      smtp_secure: 'false',
-      smtp_from: prev.smtp_from || 'Pakalone VIP <your-address@gmail.com>',
+      smtp_port: '465',
+      smtp_secure: 'true',
+      smtp_from: prev.smtp_from || 'Pakalone Games <your-address@gmail.com>',
       smtp_user: prev.smtp_user || 'your-address@gmail.com'
     }));
     showToast('Applied Gmail configurations. Enter your authorized username and App Password! 💡');
