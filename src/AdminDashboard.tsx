@@ -649,19 +649,19 @@ export default function AdminDashboard() {
           messageHtml: `
             <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
               <h2 style="color: #10b981; margin-top: 0; border-bottom: 2px solid #10b981; padding-bottom: 8px;">✔️ SMTP Connection Confirmed!</h2>
-              <p>Excellent! Your custom SMTP system settings are correctly registered and connected onto <strong>Pakalone Slots</strong> database repository nodes.</p>
+              <p>Excellent! Your custom SMTP system settings are correctly registered and connected onto <strong>Pakalone Games</strong> database repository nodes.</p>
               <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
                 <tr style="background-color: #f8fafc;">
                   <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; width: 140px;">SMTP Host</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">\${smtpSettings.smtp_host}</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_host}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">SMTP Port</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">\${smtpSettings.smtp_port}</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_port}</td>
                 </tr>
                 <tr style="background-color: #f8fafc;">
                   <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Sender Header</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0;">\${smtpSettings.smtp_from}</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0;">${smtpSettings.smtp_from || smtpSettings.smtp_user}</td>
                 </tr>
               </table>
               <p style="margin-top: 20px; font-size: 12px; color: #64748b;">This verification message was sent successfully. You may close this notification safely.</p>

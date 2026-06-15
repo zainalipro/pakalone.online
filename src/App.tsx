@@ -274,6 +274,20 @@ export default function App() {
               <span>Verified 2026 Stable APKs Only</span>
             </span>
             
+            {/* Header Search Bar */}
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-blue-200">
+                <Search className="h-4 w-4" />
+              </span>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-28 sm:w-40 md:w-56 rounded-xl bg-[#082a69] border border-blue-500/30 py-1.5 pl-9 pr-3 text-xs font-semibold text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all shadow-inner"
+              />
+            </div>
+
             {/* Elegant Dark/Light Mode Loop Trigger */}
             <button
               onClick={toggleTheme}
@@ -287,10 +301,6 @@ export default function App() {
               ) : (
                 <Sun className="h-4 w-4 text-yellow-400" />
               )}
-            </button>
-
-            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors md:hidden text-white">
-              <Menu className="h-5 w-5" />
             </button>
           </div>
         </header>

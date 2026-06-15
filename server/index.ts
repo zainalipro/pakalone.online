@@ -280,12 +280,15 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
       return { success: false, error: "SMTP host or authentication user/password is missing in administration dashboard settings." };
     }
 
-    const host = settings.smtp_host;
-    const port = parseInt(settings.smtp_port || "587", 10);
-    const secure = settings.smtp_secure === 'true';
-    const user = settings.smtp_user;
-    const pass = settings.smtp_pass;
-    const fromVal = settings.smtp_from || `"Pakalone Slots" <${user}>`;
+    const host = (settings.smtp_host || "").trim();
+    const port = parseInt((settings.smtp_port || "587").trim(), 10);
+    // Google App Passwords are shown in 4x4 blocks separated by spaces (e.g. `abcd efgh ijkl mnop`).
+    // Automatically stripping all spaces ensures copy-paste works flawlessly!
+    const pass = (settings.smtp_pass || "").replace(/\s+/g, "");
+    const user = (settings.smtp_user || "").trim();
+    // Default secure option based on port or standard setting
+    const secure = settings.smtp_secure === 'true' || port === 465;
+    const fromVal = (settings.smtp_from || "").trim() || `"Pakalone Games" <${user}>`;
 
     try {
       const transporter = nodemailer.createTransport({
@@ -298,12 +301,15 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
         },
         tls: {
           rejectUnauthorized: false
-        }
+        },
+        connectionTimeout: 10000, // 10s connection timeout limit
+        greetingTimeout: 10000,
+        socketTimeout: 15000
       });
 
       const info = await transporter.sendMail({
         from: fromVal,
-        to,
+        to: to || user,
         subject,
         html: htmlText
       });
@@ -312,7 +318,13 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
       return { success: true, messageId: info.messageId };
     } catch (err: any) {
       console.error("❌ Email sending failure:", err);
-      return { success: false, error: err?.message || String(err) };
+      let errorDetail = err?.message || String(err);
+      if (errorDetail.includes("EAUTH") || errorDetail.includes("Authentication failed")) {
+        errorDetail += " (Authentication failed. Please verify that your SMTP App Password is valid, spaces are omitted, and Google 2-Step Verification is active.)";
+      } else if (errorDetail.includes("ETIMEDOUT") || errorDetail.includes("timeout")) {
+        errorDetail += " (Connection timeout. Please double-check your SMTP Host, Port number, and SSL/TLS configuration.)";
+      }
+      return { success: false, error: errorDetail };
     }
   }
 
