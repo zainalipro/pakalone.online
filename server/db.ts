@@ -133,9 +133,6 @@ export function getLocalAdmins(): string[] {
       const data = JSON.parse(fs.readFileSync(ADMINS_FILE, 'utf-8'));
       if (Array.isArray(data)) {
         const list = data.map((email: string) => email.toLowerCase().trim());
-        if (!list.includes('pakalone.online@gmail.com')) {
-          list.push('pakalone.online@gmail.com');
-        }
         cachedAdmins = list;
         return list;
       }
@@ -143,7 +140,7 @@ export function getLocalAdmins(): string[] {
   } catch (e) {
     console.error("Error reading local admins config:", e);
   }
-  const defaults = ['zainalipri@gmail.com', 'zainalipro83@gmail.com', 'pakalone.online@gmail.com'];
+  const defaults = ['zainalipri@gmail.com', 'zainalipro83@gmail.com'];
   cachedAdmins = defaults;
   return defaults;
 }
@@ -153,9 +150,6 @@ export function saveLocalAdmins(admins: string[]) {
     const dir = path.dirname(ADMINS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     const cleanList = admins.map(e => e.toLowerCase().trim());
-    if (!cleanList.includes('pakalone.online@gmail.com')) {
-      cleanList.push('pakalone.online@gmail.com');
-    }
     fs.writeFileSync(ADMINS_FILE, JSON.stringify(cleanList, null, 2), 'utf-8');
     cachedAdmins = cleanList;
 
@@ -230,10 +224,106 @@ let memorySettings: Record<string, string> = {
   community_telegram: 'https://t.me',
   portal_theme_mode: 'light'
 };
+export function getSeedApps(): any[] {
+  return [
+    {
+      id: "s9-game",
+      name: "S9 Game",
+      logo: "🎰",
+      rating: 4.8,
+      downloads: "500K+",
+      apkSize: "35 MB",
+      minCashout: "Rs. 200",
+      methods: ["EasyPaisa", "JazzCash"],
+      tagline: "Pakistan's #1 Trusted Cards & Instant EasyPaisa Payout Platform",
+      detailedReview: "S9 Game (Super 9) is currently the leading real-money earning portal in Pakistan. Vetted for security and consistency, this stable gaming APK offers an optimized direct connection to EasyPaisa and JazzCash withdrawals. Players can enjoy traditional slot machines, classic cards, and lucky roulette dials with guaranteed low latency and daily check-in rewards. Its 24/7 client support keeps withdrawal pipes smooth for PKR players. Regular events and transparent multiplier rules make it highly recommended for users seeking vetted online entertainment with instant checkouts.",
+      detailedReviewUrdu: "ایس نائن گیم (S9 Game) اس وقت پاکستان میں سب سے زیادہ مقبول اور قابلِ اعتماد ارننگ گیم ہے۔ یہ ایپ تیز اور محفوظ ایزی پیسہ اور جاز کیش کیش آؤٹ کی خصوصیات پیش کرتی ہے۔ صارفین سلیش سلاٹس، لکی رولیٹی، اور کلاسک کارڈ گیمز کھیل کر حقیقی آمدنی کما سکتے ہیں۔ چوبیس گھنٹے فعال کسٹمر سروس اور روزانہ فری بونسز صارفین کے اعتماد کو مزید مضبوط بناتے ہیں۔",
+      pros: [
+        "Direct checkout to JazzCash & EasyPaisa without delays",
+        "Optimized low latency for all entry networks in Pakistan",
+        "Very low minimum withdrawal and high multiplying factor"
+      ],
+      cons: [
+        "Not yet available on official Google Play Store",
+        "Moderate battery consumption on old Android phones"
+      ],
+      badge: "MOST POPULAR",
+      apkUrl: "https://pakalone.online/downloads/s9game.apk",
+      dailyUsers: "15,000+",
+      previewImages: [
+        "https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=500&q=80",
+        "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?w=500&q=80"
+      ],
+      videoUrl: "",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: "three-patti-lucky",
+      name: "Three Patti Lucky",
+      logo: "🃏",
+      rating: 4.7,
+      downloads: "200K+",
+      apkSize: "28 MB",
+      minCashout: "Rs. 100",
+      methods: ["EasyPaisa", "JazzCash"],
+      tagline: "Highest Multipliers on Traditional Slots and Card Tables in Pakistan",
+      detailedReview: "Three Patti Lucky is a magnificent card game simulator perfectly fine-tuned for Pakistani cellular bandwidths. Integrating safe payout portals, this lightweight APK includes robust multiplier rounds on local slot tables. With round-the-clock security configurations, the portal establishes absolute transaction consistency. Download the official, updated secure mirror APK node to access exclusive cashout rooms with low entry barriers.",
+      detailedReviewUrdu: "تھری پتی لکی کارڈ گیمز کے شائقین کے لیے ایک بہترین پلیٹ فارم ہے جس میں ایزی پیسہ اور جاز کیش کے ذریعے فوری ادائیگیاں حاصل کی جا سکتی ہیں۔ لائیو سپورٹ، شاندار گرافکس اور منصفانہ کھیل اس گیم کو ممتاز بناتے ہیں۔",
+      pros: [
+        "Ultra-lightweight 28 MB installation file size",
+        "Instant Rs. 100 withdrawal minimum limit",
+        "Daily login bonuses and lucky mystery scratchcards"
+      ],
+      cons: [
+        "Interface has background audio that must be muted manually",
+        "Requires active internet connection at all times to execute slots"
+      ],
+      badge: "TRUSTED",
+      apkUrl: "https://pakalone.online/downloads/three-patti-lucky.apk",
+      dailyUsers: "8,500+",
+      previewImages: [
+        "https://images.unsplash.com/photo-1511193311914-0346f16efe90?w=500&q=80"
+      ],
+      videoUrl: "",
+      createdAt: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: "all-slots-777",
+      name: "All Slots 777",
+      logo: "💎",
+      rating: 4.9,
+      downloads: "100K+",
+      apkSize: "42 MB",
+      minCashout: "Rs. 150",
+      methods: ["EasyPaisa", "JazzCash", "Bank Transfer"],
+      tagline: "Premium Vegas-Style Slot Rooms Fine-Tuned for Direct PKR Cashouts",
+      detailedReview: "All Slots 777 transforms mobile slot gaming with its certified multiplier engine. Boasting state-of-the-art secure slots rooms, the APK features rapid cashouts to local bank modules and mobile wallets. The platform's automated audit ensures a transparent gaming environment. Grab the official agency APK today and leverage safe multipliers in trusted digital slot loops.",
+      detailedReviewUrdu: "آل سلاٹس 777 ایک پریمیم سلاٹ گیم ہے جو پاکستان میں بینک اور موبائل والٹس میں ادائیگیاں فراہم کرتا ہے۔ اس میں کثیر تعداد میں سلاٹ رومز اور کلاسک ویگاس طرز کا گیم پلے منصفانہ اور شفاف طریقے سے پیش کیا گیا ہے۔",
+      pros: [
+        "Offers verified bank transfers alongside local telco wallets",
+        "Stately visual graphics with intuitive responsive design",
+        "Certified fair-multiplier engine with transparent audit logs"
+      ],
+      cons: [
+        "Slightly larger memory profile requiring 42 MB",
+        "Strict account validation protocols to thwart duplicate login abuse"
+      ],
+      badge: "HIGHEST PAYOUT",
+      apkUrl: "https://pakalone.online/downloads/allslots777.apk",
+      dailyUsers: "11,000+",
+      previewImages: [
+        "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500&q=80"
+      ],
+      videoUrl: "",
+      createdAt: new Date(Date.now() - 7200000).toISOString()
+    }
+  ];
+}
+
 let memorySubscribers: any[] = [];
 let memoryMessages: any[] = [];
 
-let memoryApps: any[] = [];
+let memoryApps: any[] = getSeedApps();
 
 export async function initDb() {
   console.log("Initializing database connection...");
@@ -364,9 +454,8 @@ export async function initDb() {
         );
       `);
       
-      // Explicitly delete any default apps to respect requested scope cleanups
-      await client.query("DELETE FROM apps WHERE id IN ('all-slots-777', 's9-game', 'three-patti-lucky')");
-      console.log("Database initialized: Verified default seed cleanups applied.");
+      // Explicitly remove deleting default apps to allow persistence of custom data and seed apps
+      console.log("Database initialized check: General games/apps preserved.");
 
       // Load saved admin settings cache from Supabase database
       try {
@@ -377,9 +466,6 @@ export async function initDb() {
             const parsed = JSON.parse(loadedStr);
             if (Array.isArray(parsed) && parsed.length > 0) {
               const list = parsed.map((e: string) => e.toLowerCase().trim());
-              if (!list.includes('pakalone.online@gmail.com')) {
-                list.push('pakalone.online@gmail.com');
-              }
               cachedAdmins = list;
               // Sync back to local file for offline fallback capability
               const dir = path.dirname(ADMINS_FILE);
@@ -459,7 +545,15 @@ export async function fetchAllApps() {
         });
         
         if (appsList.length === 0) {
-          console.log("No apps found in Firestore; skipping seeding as requested.");
+          console.log("No apps found in Firestore; automatically seeding premium trusted Pakistani slots apps...");
+          const seedAppsList = getSeedApps();
+          for (const app of seedAppsList) {
+            await saveAppReview(app.id, app);
+          }
+          return seedAppsList.map(app => ({
+            ...app,
+            createdAt: new Date(app.createdAt)
+          })).sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime());
         }
         return appsList.sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime());
       } catch (err) {
@@ -669,7 +763,8 @@ export async function fetchAdminSettings() {
     community_facebook: 'https://facebook.com',
     community_twitter: 'https://twitter.com',
     community_telegram: 'https://t.me',
-    portal_theme_mode: 'light'
+    portal_theme_mode: 'light',
+    gemini_api_key: ''
   };
 
   if (provider === 'firebase') {

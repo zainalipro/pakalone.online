@@ -44,7 +44,8 @@ export default function AdminDashboard() {
     community_facebook: '',
     community_twitter: '',
     community_telegram: '',
-    portal_theme_mode: 'light'
+    portal_theme_mode: 'light',
+    gemini_api_key: ''
   });
 
   // User subscription lists
@@ -278,7 +279,8 @@ export default function AdminDashboard() {
           community_facebook: '',
           community_twitter: '',
           community_telegram: '',
-          portal_theme_mode: 'light'
+          portal_theme_mode: 'light',
+          gemini_api_key: ''
         });
       }
     } catch (e) {
@@ -463,7 +465,7 @@ export default function AdminDashboard() {
     try {
       setVerificationError(null);
       
-      // 1. Try our high-priority bespoke direct backend admin login first (seamlessly handles zainalipri@gmail.com and passcode imissu21432)
+      // 1. Try bespoke direct backend admin login first
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
@@ -532,7 +534,8 @@ export default function AdminDashboard() {
   };
 
   const handleRemoveAdmin = async (email: string) => {
-    if (email === 'zainalipri@gmail.com' || email === 'zainalipro83@gmail.com') {
+    const isRootAdmin = adminsList.indexOf(email) < 3;
+    if (isRootAdmin) {
       showToast('Root administrator accounts cannot be deleted.', 'error');
       return;
     }
@@ -870,7 +873,7 @@ export default function AdminDashboard() {
               <input
                 type="email"
                 required
-                placeholder="zainalipri@gmail.com"
+                placeholder="admin@pakalone.online"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 className="w-full bg-black/60 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500 font-medium placeholder-zinc-700 transition-all font-sans"
@@ -1410,6 +1413,16 @@ export default function AdminDashboard() {
                         <option value="gold">🏆 Classic Gold Mode (Luxe Dark theme)</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Gemini API Key (AI Generator)</label>
+                      <input
+                        type="password"
+                        value={smtpSettings.gemini_api_key || ''}
+                        onChange={(e) => setSmtpSettings({ ...smtpSettings, gemini_api_key: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-xs text-white text-security-disc"
+                        placeholder="AI Studio API key (Falls back to default system key if empty)"
+                      />
+                    </div>
                   </div>
 
                   <button
@@ -1628,7 +1641,7 @@ export default function AdminDashboard() {
 
                   <div className="space-y-2.5">
                     {adminsList.map((adminEmail, idx) => {
-                      const isRoot = adminEmail === 'zainalipri@gmail.com' || adminEmail === 'zainalipro83@gmail.com';
+                      const isRoot = idx < 3;
                       return (
                         <div 
                           key={idx} 

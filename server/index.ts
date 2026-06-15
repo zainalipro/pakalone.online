@@ -88,6 +88,17 @@ async function startServer() {
          return;
       }
 
+      const settings = await fetchAdminSettings();
+      const customApiKey = settings.gemini_api_key;
+      const activeAi = new GoogleGenAI({
+        apiKey: customApiKey || process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
       const prompt = `As an SEO expert and reviewer for 'Pakalone' Pakistani Game & App portal, prepare the following for the app "${gameName}":
 ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
 1. SEO Friendly Title
@@ -96,7 +107,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
 4. A short promotional newsletter email to send to the users (in a friendly, engaging tone).
 5. A complete draft review object containing an icon emoji, realistic download count (e.g., 100K+ or 500K+), rating (4.5 to 4.9), estimated APK size (e.g., 34 MB), typical minimum cashout (e.g., Rs. 100 or Rs. 200), withdrawal methods list, tagline, professional detailed review in English, persuasive review in fine Urdu script for Pakistani audiences, realistic pros and cons lists, highlight badge (e.g., HOT, TRUSTED, VERIFIED), and estimated daily active players count. Ensure all estimates suit typical lightweight Pakistani mobile space conditions.`;
 
-      const response = await ai.models.generateContent({
+      const response = await activeAi.models.generateContent({
         model: "gemini-3.5-flash",
         contents: prompt,
         config: {
@@ -345,7 +356,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
       const email = req.params.email.toLowerCase().trim();
       
       // Prevent lockout of standard root admins
-      if (email === 'zainalipri@gmail.com' || email === 'zainalipro83@gmail.com' || email === 'pakalone.online@gmail.com') {
+      if (email === 'zainalipri@gmail.com' || email === 'zainalipro83@gmail.com') {
         res.status(400).json({ error: "Root admin emails cannot be deleted to avoid lockout." });
         return;
       }
