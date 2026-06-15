@@ -822,7 +822,7 @@ export default function AdminDashboard() {
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         // compress heavily to stay well within firestore limit
-        const dataUrl = canvas.toDataURL('image/webp', 0.8);
+        const dataUrl = canvas.toDataURL('image/webp', 0.82);
         setEditApp(prev => ({ ...prev, logo: dataUrl }));
       };
       if (event.target?.result) {
@@ -830,6 +830,84 @@ export default function AdminDashboard() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handlePortalLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 450; // crisp and wide enough for website logo
+        const scaleSize = Math.min(1, MAX_WIDTH / img.width);
+        canvas.width = img.width * scaleSize;
+        canvas.height = img.height * scaleSize;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/webp', 0.82);
+        setSmtpSettings(prev => ({ ...prev, portal_logo_url: dataUrl }));
+        showToast('Website logo loaded. Click save below to apply! 🖼️');
+      };
+      if (event.target?.result) {
+        img.src = event.target.result as string;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleGamePreviewsChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    showToast('Processing uploaded screenshots... 📱');
+    
+    const readAndCompress = (file: File): Promise<string> => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 550; // Optimized size for sharp, compact previews
+            const scaleSize = Math.min(1, MAX_WIDTH / img.width);
+            canvas.width = img.width * scaleSize;
+            canvas.height = img.height * scaleSize;
+
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          if (event.target?.result) {
+            img.src = event.target.result as string;
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    try {
+      const compressedResults: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const dataUrl = await readAndCompress(files[i]);
+        compressedResults.push(dataUrl);
+      }
+
+      // Merge with any current ones
+      const current = Array.isArray(editApp.previewImages) ? editApp.previewImages : [];
+      setEditApp(prev => ({
+        ...prev,
+        previewImages: [...current, ...compressedResults]
+      }));
+      showToast(`Successfully uploaded ${files.length} screenshots!`);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to process preview screenshots.', 'error');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -1045,8 +1123,69 @@ export default function AdminDashboard() {
                   <input value={editApp.videoUrl || ''} onChange={e => setEditApp({...editApp, videoUrl: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-sm" placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Game Preview Image URLs (Comma-separated, Optional)</label>
-                  <textarea rows={2} value={editApp.previewImages ? (Array.isArray(editApp.previewImages) ? editApp.previewImages.join(', ') : editApp.previewImages) : ''} onChange={e => setEditApp({...editApp, previewImages: e.target.value as any})} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-sm align-top leading-relaxed" placeholder="e.g. https://domain.com/screen1.jpg, https://domain.com/screen2.jpg" />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Game Preview Images (Upload manually & manage list)</label>
+                  
+                  {/* File Upload Zone */}
+                  <div className="flex gap-4 items-center mb-3">
+                    <label className="flex-1 border-2 border-dashed border-zinc-850 hover:border-gold-500/50 rounded-xl p-5 text-center cursor-pointer transition bg-zinc-950/20 hover:bg-zinc-950/40">
+                      <div className="text-zinc-400 text-xs font-bold flex flex-col items-center gap-1.5">
+                        <span className="text-gold-400 text-xl">📱</span>
+                        <span>Click to choose & upload multiple screenshots</span>
+                        <span className="text-3xs text-zinc-500 font-normal">Files are compressed automatically to keep page loads high-speed</span>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        onChange={handleGamePreviewsChange} 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+
+                  {/* Manual / Pasted URLs Text Input backup fallback */}
+                  <textarea 
+                    rows={2} 
+                    value={editApp.previewImages ? (Array.isArray(editApp.previewImages) ? editApp.previewImages.join(', ') : editApp.previewImages) : ''} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditApp({
+                        ...editApp, 
+                        previewImages: val.split(',').map(s => s.trim()).filter(Boolean)
+                      });
+                    }} 
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-xs align-top leading-relaxed font-mono text-zinc-400" 
+                    placeholder="Comma-separated image URLs (e.g. https://domain.com/screen1.jpg, or automatic uploaded base64 data)" 
+                  />
+
+                  {/* Screenshots live visual representation tiles */}
+                  {Array.isArray(editApp.previewImages) && editApp.previewImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-3">
+                      {editApp.previewImages.map((imgSrc, index) => (
+                        <div key={index} className="relative group aspect-[9/16] bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden animate-fade-in">
+                          <img src={imgSrc} alt={`Screenshot ${index + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity">
+                            <span className="text-3xs font-bold text-zinc-300">Slot #{index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...(editApp.previewImages || [])];
+                                updated.splice(index, 1);
+                                setEditApp({ ...editApp, previewImages: updated });
+                              }}
+                              className="p-1.5 bg-rose-600 rounded-full text-white hover:bg-rose-700 transition shadow hover:scale-110"
+                              title="Delete Screenshot"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <div className="absolute bottom-1 left-1 bg-black/80 px-1 rounded text-[8px] font-mono font-bold text-zinc-400 border border-zinc-800">
+                            #{index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
               </div>
@@ -1435,6 +1574,30 @@ export default function AdminDashboard() {
                         className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-xs text-white text-security-disc"
                         placeholder="AI Studio API key (Falls back to default system key if empty)"
                       />
+                    </div>
+                    <div className="md:col-span-2 border-t border-zinc-900 pt-3">
+                      <label className="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Custom Portal Website Logo (Manually Chosen File)</label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={smtpSettings.portal_logo_url || ''}
+                          onChange={(e) => setSmtpSettings({ ...smtpSettings, portal_logo_url: e.target.value })}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 outline-none focus:border-gold-500 text-xs text-white"
+                          placeholder="Image URL or compressed logo WebP base64 string"
+                        />
+                        <label className="bg-zinc-850 hover:bg-zinc-800 text-zinc-300 px-4 py-3 rounded-lg cursor-pointer whitespace-nowrap text-xs font-semibold transition border border-zinc-800">
+                          Upload Custom Logo
+                          <input type="file" accept="image/*" onChange={handlePortalLogoUpload} className="hidden" />
+                        </label>
+                      </div>
+                      {smtpSettings.portal_logo_url && (
+                        <div className="mt-2 text-[10px] text-zinc-500 flex items-center gap-2">
+                          <span className="font-bold text-zinc-400">Branded Logo Preview:</span>
+                          <div className="bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900">
+                            <img src={smtpSettings.portal_logo_url} alt="Logo Preview" className="h-10 w-auto object-contain max-w-[180px]" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

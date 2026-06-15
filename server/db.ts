@@ -140,7 +140,7 @@ export function getLocalAdmins(): string[] {
   } catch (e) {
     console.error("Error reading local admins config:", e);
   }
-  const defaults = ['zainalipri@gmail.com', 'zainalipro83@gmail.com'];
+  const defaults = ['zainalipri@gmail.com', 'zainalipro83@gmail.com', 'pakalone.online@gmail.com'];
   cachedAdmins = defaults;
   return defaults;
 }

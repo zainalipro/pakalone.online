@@ -232,7 +232,7 @@ export default function GameDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...msgForm,
-          subject: msgForm.subject || `Inquiry about ${app?.name || 'Pakalone Slots'}`
+          subject: msgForm.subject || `Inquiry about ${app?.name || 'Pakalone Games'}`
         })
       });
       const data = await res.json();
@@ -767,7 +767,7 @@ export default function GameDetailPage() {
       {/* Footer back to app index */}
       <footer className="bg-white border-t border-slate-100 py-8 text-center text-xs text-slate-500 font-medium">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© 2026 Pakalone Slots. All Rights Vetted and Verified.</p>
+          <p>© 2026 Pakalone Games. All Rights Vetted and Verified.</p>
         </div>
       </footer>
 

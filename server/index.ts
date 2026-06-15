@@ -394,7 +394,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
       const email = req.params.email.toLowerCase().trim();
       
       // Prevent lockout of standard root admins
-      if (email === 'zainalipri@gmail.com' || email === 'zainalipro83@gmail.com') {
+      if (email === 'zainalipri@gmail.com' || email === 'zainalipro83@gmail.com' || email === 'pakalone.online@gmail.com') {
         res.status(400).json({ error: "Root admin emails cannot be deleted to avoid lockout." });
         return;
       }
@@ -488,14 +488,16 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
         community_facebook: settings.community_facebook || 'https://facebook.com',
         community_twitter: settings.community_twitter || 'https://twitter.com',
         community_telegram: settings.community_telegram || 'https://t.me',
-        portal_theme_mode: settings.portal_theme_mode || 'light'
+        portal_theme_mode: settings.portal_theme_mode || 'light',
+        portal_logo_url: settings.portal_logo_url || ''
       });
     } catch (err: any) {
       res.json({
         community_facebook: 'https://facebook.com',
         community_twitter: 'https://twitter.com',
         community_telegram: 'https://t.me',
-        portal_theme_mode: 'light'
+        portal_theme_mode: 'light',
+        portal_logo_url: ''
       });
     }
   });

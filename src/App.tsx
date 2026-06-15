@@ -13,7 +13,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [appsDataset, setAppsDataset] = useState<AppReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'casino' | 'earning'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'casino' | 'earning' | 'hot'>('all');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   // Newsletter subscription states
@@ -37,6 +37,7 @@ export default function App() {
   });
   const [activeThemeId, setActiveThemeId] = useState('saas-light');
   const [showAdminSecret, setShowAdminSecret] = useState(false);
+  const [portalLogo, setPortalLogo] = useState('/logo.svg');
 
   const toggleTheme = () => {
     let nextTheme = 'saas-light';
@@ -115,6 +116,11 @@ export default function App() {
             twitter: data.community_twitter || 'https://twitter.com',
             telegram: data.community_telegram || 'https://t.me'
           });
+          if (data.portal_logo_url) {
+            setPortalLogo(data.portal_logo_url);
+          } else {
+            setPortalLogo('/logo.svg');
+          }
           // Update theme if not overridden by local storage user preference
           if (data.portal_theme_mode) {
             defaultTheme = data.portal_theme_mode;
@@ -187,7 +193,11 @@ export default function App() {
       
       if (!matchesSearch) return false;
 
-      if (activeCategory === 'casino') {
+      if (activeCategory === 'hot') {
+        const lowerName = app.name.toLowerCase();
+        const badge = (app.badge || '').toLowerCase();
+        return badge.includes('hot') || badge.includes('trend') || badge.includes('vetted') || badge.includes('top') || badge.includes('recommend') || app.rating >= 4.7;
+      } else if (activeCategory === 'casino') {
         const lowerName = app.name.toLowerCase();
         return lowerName.includes('slot') || lowerName.includes('casino') || lowerName.includes('patti') || lowerName.includes('bet') || lowerName.includes('win');
       } else if (activeCategory === 'earning') {
@@ -218,6 +228,13 @@ export default function App() {
     return [...appsDataset].sort((a, b) => b.rating - a.rating).slice(0, 3);
   }, [appsDataset]);
 
+  const hotGamesList = useMemo(() => {
+    return appsDataset.filter(app => {
+      const badge = (app.badge || '').toLowerCase();
+      return badge.includes('hot') || badge.includes('trend') || badge.includes('vetted') || badge.includes('top') || badge.includes('recommend') || app.rating >= 4.7;
+    }).slice(0, 4);
+  }, [appsDataset]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -229,12 +246,18 @@ export default function App() {
       <div className="bg-gradient-to-r from-[#0d3a8e] to-[#0c4cbd] text-white shadow-xl">
         <header className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Circular P Emblem with Corona Ring & Shadow */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 p-[2.5px] shadow-lg flex items-center justify-center select-none flex-shrink-0 animate-pulse">
-              <div className="w-full h-full rounded-full bg-[#0a2e75] flex items-center justify-center font-black text-xl text-yellow-300 tracking-tighter shadow-inner">
-                P
+            {/* Custom Logo or Circular P Emblem with Corona Ring & Shadow */}
+            {portalLogo ? (
+              <div className="h-12 flex items-center justify-center bg-zinc-950/20 px-2 py-1 rounded-xl border border-white/10 shadow-sm backdrop-blur-3xs">
+                <img src={portalLogo} alt="Pakalone Games Logo" className="h-10 w-auto object-contain max-w-[160px]" />
               </div>
-            </div>
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 p-[2.5px] shadow-lg flex items-center justify-center select-none flex-shrink-0 animate-pulse">
+                <div className="w-full h-full rounded-full bg-[#0a2e75] flex items-center justify-center font-black text-xl text-yellow-300 tracking-tighter shadow-inner">
+                  P
+                </div>
+              </div>
+            )}
             <div className="text-left">
               <h1 className="font-display text-xl md:text-2xl font-black text-white tracking-tight uppercase leading-none drop-shadow">
                 Pakalone Games
@@ -309,7 +332,7 @@ export default function App() {
         </div>
 
         {/* Categories Tab selector bar */}
-        <div className="grid grid-cols-3 gap-2 p-1.5 bg-white border border-slate-200 rounded-2xl shadow-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-1.5 bg-white border border-slate-200 rounded-2xl shadow-xs">
           <button
             onClick={() => { setActiveCategory('all'); setCurrentPage(1); }}
             className={`py-3 px-2 rounded-xl text-xs font-black transition-all font-sans uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -322,6 +345,17 @@ export default function App() {
             <span>All Apps</span>
           </button>
           <button
+            onClick={() => { setActiveCategory('hot'); setCurrentPage(1); }}
+            className={`py-3 px-2 rounded-xl text-xs font-black transition-all font-sans uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeCategory === 'hot' 
+                ? 'bg-orange-500 text-white shadow-md scale-[1.02]' 
+                : 'bg-transparent text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <Flame className="h-4 w-4 text-red-500 animate-pulse animate-bounce" />
+            <span>Hot Games</span>
+          </button>
+          <button
             onClick={() => { setActiveCategory('casino'); setCurrentPage(1); }}
             className={`py-3 px-2 rounded-xl text-xs font-black transition-all font-sans uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer ${
               activeCategory === 'casino' 
@@ -329,7 +363,7 @@ export default function App() {
                 : 'bg-transparent text-slate-600 hover:bg-slate-50'
             }`}
           >
-            <Flame className="h-4 w-4 text-orange-500" />
+            <Sparkles className="h-4 w-4 text-amber-500" />
             <span>Casino</span>
           </button>
           <button
@@ -341,7 +375,7 @@ export default function App() {
             }`}
           >
             <Award className="h-4 w-4 text-emerald-500" />
-            <span>Games</span>
+            <span>Earning</span>
           </button>
         </div>
 
@@ -436,6 +470,76 @@ export default function App() {
                       <Download className="h-3.5 w-3.5" />
                       <span>Download</span>
                     </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Hot Games Spotlight Grid */}
+        {!searchQuery && hotGamesList.length > 0 && (
+          <div className="space-y-3.5 text-left animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-base md:text-lg font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-tight">
+                <span className="text-red-500 animate-pulse text-base">🔥</span>
+                <span>Hot Games Selection</span>
+              </h3>
+              <button 
+                onClick={() => { setActiveCategory('hot'); scrollToTop(); }} 
+                className="text-xs font-black text-orange-600 hover:text-orange-700 hover:underline transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>See All Hot</span>
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {hotGamesList.map((app) => (
+                <div 
+                  key={app.id} 
+                  className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col justify-between hover:shadow-md transition-all duration-200 relative group text-left overflow-hidden shadow-2xs"
+                >
+                  {/* Miniature Hot Badge */}
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider scale-95 animate-pulse z-10">
+                    Hot
+                  </span>
+
+                  <div>
+                    {/* Compact logo layout */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-xl p-[1.5px] shadow-xs select-none mb-3">
+                      <div className="w-full h-full bg-[#101018] rounded-[11px] flex items-center justify-center overflow-hidden">
+                        {app.logo && (app.logo.startsWith('http') || app.logo.startsWith('data:image')) ? (
+                          <img src={app.logo} alt={app.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xl select-none">{app.logo || '🏆'}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <h4 className="font-display font-black text-sm text-[#0d3a8e] line-clamp-1 mb-0.5">
+                      {app.name}
+                    </h4>
+                    <p className="text-[10px] text-slate-500 leading-tight line-clamp-2 min-h-[30px] mb-3">
+                      {app.tagline}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                    <div className="flex items-center justify-between text-2xs font-bold text-slate-600">
+                      <span className="flex items-center text-amber-500 gap-0.5">
+                        <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                        <span>{app.rating || '4.8'}</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-400">{app.apkSize || '25 MB'}</span>
+                    </div>
+
+                    <Link 
+                      to={`/game/${app.id}`}
+                      className="w-full py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black text-[10px] rounded-lg text-center block transition uppercase tracking-wider"
+                    >
+                      Play & Earn
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -602,7 +706,7 @@ export default function App() {
         {/* Corporate overview descriptions and Urdu translations */}
         <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-xs text-left space-y-4">
           <p className="text-sm text-slate-700 leading-relaxed font-semibold">
-            <span className="font-bold text-[#0d3a8e]">PakaloneGames.com</span> is Pakistan's trusted source for the latest casino and earning APK downloads. We provide safe links, app updates, detailed guides, and honest reviews.
+            <span className="font-bold text-[#0d3a8e]">pakalone.online</span> is Pakistan's trusted source for the latest casino and earning APK downloads. We provide safe links, app updates, detailed guides, and honest reviews.
           </p>
           <div className="border-t border-slate-100 pt-4 text-right space-y-2">
             <p className="text-sm font-semibold leading-relaxed font-sans text-slate-700" dir="rtl">
