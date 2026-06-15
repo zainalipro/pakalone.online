@@ -1221,6 +1221,19 @@ export default function AdminDashboard() {
                     Enter your Gmail SMTP or custom SMTP details to send reliable bulk notifications and system feedback alerts.
                   </p>
                   
+                  {/* SMTP Troubleshooter Help Card */}
+                  <div className="mt-4 bg-zinc-950/65 border border-zinc-900 rounded-xl p-4 space-y-2 text-zinc-400">
+                    <h4 className="text-2xs font-extrabold text-amber-500 uppercase tracking-widest flex items-center gap-1.5">
+                      <span>⚠️</span>
+                      <span>SMTP Credentials Guide & Troubleshooting Tips</span>
+                    </h4>
+                    <ul className="text-3xs list-disc pl-4 space-y-1 text-zinc-400 font-sans leading-normal">
+                      <li><strong>Gmail App Password Required:</strong> Standard user account passwords will be blocked. You must enable 2-Step Verification and generate a 16-character <strong>App Password</strong> in Google Account Security Settings.</li>
+                      <li><strong>Port Rules:</strong> Set port to <strong>587</strong> with secure connection off (STARTTLS transition) or port <strong>465</strong> with secure connection on (SSL).</li>
+                      <li><strong>Server Network Permission:</strong> Hosting providers might block standard outgoing mail ports on server containers for safety. Use authorized secure relays for optimal results.</li>
+                    </ul>
+                  </div>
+                  
                   {/* Preset Buttons */}
                   <div className="flex flex-wrap gap-2.5 mt-4 items-center bg-zinc-950 p-3 rounded-xl border border-zinc-800/60">
                     <span className="text-2xs font-extrabold text-zinc-400 uppercase tracking-wider font-mono">Quick Preset Configuration:</span>
@@ -1787,6 +1800,25 @@ export default function AdminDashboard() {
                             </>
                           )}
                         </button>
+                        
+                        <div className="mt-6 bg-zinc-950/60 border border-zinc-850/40 rounded-xl p-5 space-y-4">
+                          <h4 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+                            <span className="text-emerald-400">⚡</span>
+                            <span>Default Supabase Integration Reference</span>
+                          </h4>
+                          <p className="text-2xs text-zinc-400 leading-relaxed font-sans">
+                            By default, the application code is pre-configured with the following secure PostgreSQL database hosted on Supabase:
+                          </p>
+                          <div className="bg-zinc-950 font-mono text-2xs p-3.5 rounded-lg border border-zinc-900/80 overflow-x-auto space-y-2 text-zinc-300">
+                            <div><strong className="text-emerald-400 font-bold">Default Host DB:</strong> db.xcxiwhxszjprbxypxqsy.supabase.co</div>
+                            <div><strong className="text-emerald-400 font-bold">Default Port:</strong> 5432</div>
+                            <div><strong className="text-emerald-400 font-bold">Default Database:</strong> postgres</div>
+                            <div><strong className="text-emerald-400 font-bold">Default API Client Endpoint:</strong> https://xcxiwhxszjprbxypxqsy.supabase.co</div>
+                          </div>
+                          <p className="text-[10px] text-zinc-500 leading-relaxed font-sans">
+                            This live integration automatically seeds and stores certified slot application reviews, subscriber newsletter lists, and support message directories. Admin status level logic is dynamically verified on these persistent database tables.
+                          </p>
+                        </div>
                       </form>
                     ) : (
                       <div className="bg-zinc-950 border border-zinc-850 rounded-xl p-6 text-zinc-300 text-left space-y-4">

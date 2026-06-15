@@ -107,50 +107,88 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
 4. A short promotional newsletter email to send to the users (in a friendly, engaging tone).
 5. A complete draft review object containing an icon emoji, realistic download count (e.g., 100K+ or 500K+), rating (4.5 to 4.9), estimated APK size (e.g., 34 MB), typical minimum cashout (e.g., Rs. 100 or Rs. 200), withdrawal methods list, tagline, professional detailed review in English, persuasive review in fine Urdu script for Pakistani audiences, realistic pros and cons lists, highlight badge (e.g., HOT, TRUSTED, VERIFIED), and estimated daily active players count. Ensure all estimates suit typical lightweight Pakistani mobile space conditions.`;
 
-      const response = await activeAi.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
+      const schema = {
+        type: Type.OBJECT,
+        properties: {
+          seoTitle: { type: Type.STRING },
+          seoDescription: { type: Type.STRING },
+          seoKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+          promotionalEmail: { type: Type.STRING },
+          draft: {
             type: Type.OBJECT,
             properties: {
-              seoTitle: { type: Type.STRING },
-              seoDescription: { type: Type.STRING },
-              seoKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              promotionalEmail: { type: Type.STRING },
-              draft: {
-                type: Type.OBJECT,
-                properties: {
-                  logo: { type: Type.STRING, description: "A high-quality single emoji matching the app's category (e.g. 🎲, 🎰, 💎, 💸, 🎯)" },
-                  rating: { type: Type.NUMBER, description: "Numeric rating e.g. 4.7" },
-                  downloads: { type: Type.STRING, description: "E.g. 100K+ or 500K+" },
-                  apkSize: { type: Type.STRING, description: "E.g. 24 MB" },
-                  minCashout: { type: Type.STRING, description: "Minimum cashout limit in Rupees e.g. Rs. 100" },
-                  methods: { type: Type.ARRAY, items: { type: Type.STRING }, description: "E.g. ['EasyPaisa', 'JazzCash']" },
-                  tagline: { type: Type.STRING, description: "Catchy short english tagline" },
-                  detailedReview: { type: Type.STRING, description: "Polished multi-paragraph English review detailing game features and safety rules." },
-                  detailedReviewUrdu: { type: Type.STRING, description: "High-quality review written entirely in exquisite Urdu text for Pakistani users." },
-                  pros: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 prominent highlights of the app" },
-                  cons: { type: Type.ARRAY, items: { type: Type.STRING }, description: "2 physical drawbacks of the app" },
-                  badge: { type: Type.STRING, description: "A highlight word like HOT, TRUSTED, VERIFIED, NEW" },
-                  dailyUsers: { type: Type.STRING, description: "Estimated active players, e.g. 10,000+" }
-                },
-                required: ["logo", "rating", "downloads", "apkSize", "minCashout", "methods", "tagline", "detailedReview", "detailedReviewUrdu", "pros", "cons", "badge", "dailyUsers"]
-              }
+              logo: { type: Type.STRING, description: "A high-quality single emoji matching the app's category (e.g. 🎲, 🎰, 💎, 💸, 🎯)" },
+              rating: { type: Type.NUMBER, description: "Numeric rating e.g. 4.7" },
+              downloads: { type: Type.STRING, description: "E.g. 100K+ or 500K+" },
+              apkSize: { type: Type.STRING, description: "E.g. 24 MB" },
+              minCashout: { type: Type.STRING, description: "Minimum cashout limit in Rupees e.g. Rs. 100" },
+              methods: { type: Type.ARRAY, items: { type: Type.STRING }, description: "E.g. ['EasyPaisa', 'JazzCash']" },
+              tagline: { type: Type.STRING, description: "Catchy short english tagline" },
+              detailedReview: { type: Type.STRING, description: "Polished multi-paragraph English review detailing game features and safety rules." },
+              detailedReviewUrdu: { type: Type.STRING, description: "High-quality review written entirely in exquisite Urdu text for Pakistani users." },
+              pros: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 prominent highlights of the app" },
+              cons: { type: Type.ARRAY, items: { type: Type.STRING }, description: "2 physical drawbacks of the app" },
+              badge: { type: Type.STRING, description: "A highlight word like HOT, TRUSTED, VERIFIED, NEW" },
+              dailyUsers: { type: Type.STRING, description: "Estimated active players, e.g. 10,000+" }
             },
-            required: ["seoTitle", "seoDescription", "seoKeywords", "promotionalEmail", "draft"]
+            required: ["logo", "rating", "downloads", "apkSize", "minCashout", "methods", "tagline", "detailedReview", "detailedReviewUrdu", "pros", "cons", "badge", "dailyUsers"]
+          }
+        },
+        required: ["seoTitle", "seoDescription", "seoKeywords", "promotionalEmail", "draft"]
+      };
+
+      let response;
+      let textOutput = "";
+      
+      try {
+        console.log("Attempting generation using gemini-3.5-flash...");
+        response = await activeAi.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: schema
+          }
+        });
+        textOutput = response.text || "";
+      } catch (err35) {
+        console.warn("⚠️ gemini-3.5-flash failed, falling back to gemini-2.5-flash...", err35);
+        try {
+          response = await activeAi.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: schema
+            }
+          });
+          textOutput = response.text || "";
+        } catch (err25) {
+          console.warn("⚠️ gemini-2.5-flash failed, falling back to general text model...", err25);
+          try {
+            response = await activeAi.models.generateContent({
+              model: "gemini-2.5-flash",
+              contents: prompt + "\n\nProvide the response strictly as valid, raw JSON matches the requested structure. Contain fields: seoTitle, seoDescription, seoKeywords, promotionalEmail, and draft."
+            });
+            textOutput = response.text || "";
+          } catch (errFallback) {
+            console.error("❌ All AI models failed.", errFallback);
+            throw new Error(`AI generation failed: ${errFallback.message || String(errFallback)}. Please verify your Gemini API key in settings.`);
           }
         }
-      });
+      }
 
-      const textOutput = response.text;
       if (!textOutput) {
         throw new Error("No text received from Gemini.");
       }
 
-      const jsonStr = textOutput.trim();
-      const result = JSON.parse(jsonStr);
+      let jsonStr = textOutput.trim();
+      // Handle potential markdown block formatting from fallback responses
+      if (jsonStr.startsWith("```")) {
+        jsonStr = jsonStr.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
+      }
+      
+      const result = JSON.parse(jsonStr.trim());
       res.json(result);
     } catch (e: any) {
       console.error(e);
@@ -401,8 +439,8 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
   // Supabase Configuration API
   app.get("/api/supabase-config", (req, res) => {
     res.json({
-      supabaseUrl: process.env.SUPABASE_URL || "",
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ""
+      supabaseUrl: process.env.SUPABASE_URL || "https://xcxiwhxszjprbxypxqsy.supabase.co",
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjeGl3aHhzempwcmJ4eXB4cXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU0NjIzMjgsImV4cCI6MjAzMTAzODMyOH0.dummy-anon-key-actual-can-be-entered-by-admin"
     });
   });
 

@@ -15,7 +15,7 @@ try {
   console.warn("Could not configure DNS default result order:", err);
 }
 
-const DEFAULT_DATABASE_URL = 'postgresql://postgres:[Onlyforme123$]@db.xcxiwhxszjprbxypxqsy.supabase.co:5432/postgres';
+const DEFAULT_DATABASE_URL = 'postgresql://postgres:%5BOnlyforme123%24%5D@db.xcxiwhxszjprbxypxqsy.supabase.co:5432/postgres';
 
 const SUPABASE_FILE = path.join(process.cwd(), 'server', 'supabase_config.json');
 const ADMINS_FILE = path.join(process.cwd(), 'server', 'admins_config.json');
