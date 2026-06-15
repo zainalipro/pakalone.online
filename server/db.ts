@@ -23,34 +23,13 @@ const ADMINS_FILE = path.join(process.cwd(), 'server', 'admins_config.json');
 // Get active database provider: 'supabase' | 'firebase' | 'memory'
 export function getActiveDbProvider(): 'supabase' | 'firebase' | 'memory' {
   if (useMemoryDb) return 'memory';
-  try {
-    if (fs.existsSync(SUPABASE_FILE)) {
-      const data = JSON.parse(fs.readFileSync(SUPABASE_FILE, 'utf-8'));
-      if (data && data.dbProvider) {
-        if (data.dbProvider === 'supabase' && !isPostgresConnected) {
-          const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-          if (fs.existsSync(configPath)) {
-            return 'firebase';
-          }
-          return 'memory';
-        }
-        return data.dbProvider;
-      }
-    }
-  } catch (e) {}
-
   if (!isPostgresConnected) {
-    const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-    if (fs.existsSync(configPath)) {
-      return 'firebase';
-    }
     return 'memory';
   }
-
   return 'supabase';
 }
 
-export function saveActiveDbProvider(provider: 'supabase' | 'firebase') {
+export function saveActiveDbProvider(provider: 'supabase') {
   try {
     const dir = path.dirname(SUPABASE_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -61,9 +40,9 @@ export function saveActiveDbProvider(provider: 'supabase' | 'firebase') {
         existing = JSON.parse(fs.readFileSync(SUPABASE_FILE, 'utf-8'));
       } catch (e) {}
     }
-    existing.dbProvider = provider;
+    existing.dbProvider = 'supabase';
     fs.writeFileSync(SUPABASE_FILE, JSON.stringify(existing, null, 2), 'utf-8');
-    console.log(`Active database provider transitioned to: ${provider}`);
+    console.log(`Active database provider transitioned to: supabase`);
   } catch (e) {
     console.error("Error saving active db provider:", e);
   }
@@ -370,14 +349,8 @@ export async function initDb() {
 
   if (!connected) {
     isPostgresConnected = false;
-    const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-    if (fs.existsSync(configPath)) {
-      console.log("💡 PostgreSQL database is unreachable. Automatically routing active requests to Firebase Firestore database layer!");
-      useMemoryDb = false;
-    } else {
-      console.error("❌ database is unreachable or credentials failed and Firebase config not found. Switching to high-reliability local memory fallback!");
-      useMemoryDb = true;
-    }
+    console.error("❌ database is unreachable or credentials failed. Switching to high-reliability local memory fallback!");
+    useMemoryDb = true;
     return;
   }
 

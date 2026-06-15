@@ -425,12 +425,12 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
   app.post("/api/admin/db-provider", async (req, res) => {
     try {
       const { provider } = req.body;
-      if (provider !== 'supabase' && provider !== 'firebase') {
-        res.status(400).json({ error: "Invalid provider. Must be 'supabase' or 'firebase'." });
+      if (provider !== 'supabase') {
+        res.status(400).json({ error: "Invalid database provider choice. This application only uses Supabase PostgreSQL." });
         return;
       }
-      saveActiveDbProvider(provider);
-      res.json({ success: true, provider });
+      saveActiveDbProvider('supabase');
+      res.json({ success: true, provider: 'supabase' });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to switch active database provider." });
     }

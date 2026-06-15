@@ -1864,40 +1864,19 @@ export default function AdminDashboard() {
                   </p>
                 </div>
 
-                {/* DB Switcher Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div
-                    className="flex items-start gap-4 p-5 rounded-xl border text-left transition bg-zinc-950 border-gold-500 shadow-lg shadow-gold-500/5 text-white"
-                  >
-                    <div className="p-3 bg-indigo-600/10 rounded-lg text-indigo-400">
-                      <Settings className="h-5 w-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold">Supabase PostgreSQL</h4>
-                        <span className="text-[10px] bg-gold-400/10 text-gold-400 font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase border border-gold-500/10">ACTIVE CORE</span>
-                      </div>
-                      <p className="text-2xs text-zinc-400 leading-normal">
-                        Utilize standard SQL database schema, PostgreSQL connection pools, real relational tables for tested slot reviews, and custom connection string overrides.
-                      </p>
-                    </div>
+                {/* DB Config Header */}
+                <div className="p-5 rounded-xl border text-left transition bg-zinc-950 border-gold-500 shadow-lg shadow-gold-500/5 text-white flex items-start gap-4">
+                  <div className="p-3 bg-indigo-600/10 rounded-lg text-indigo-400">
+                    <Settings className="h-5 w-5" />
                   </div>
-
-                  <div
-                    className="flex items-start gap-4 p-5 rounded-xl border text-left transition bg-zinc-950/20 border-zinc-900/50 text-zinc-650 opacity-40 select-none"
-                  >
-                    <div className="p-3 bg-zinc-900 rounded-lg text-zinc-500">
-                      <Sparkles className="h-5 w-5" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold">Supabase PostgreSQL</h4>
+                      <span className="text-[10px] bg-gold-400/10 text-gold-400 font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase border border-gold-500/10">ACTIVE CORE</span>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-zinc-500">Firebase Firestore (NoSQL)</h4>
-                        <span className="text-[10px] bg-zinc-900 text-zinc-500 font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase">DEPRECATED</span>
-                      </div>
-                      <p className="text-2xs text-zinc-650 leading-normal">
-                        All application logic has been successfully migrated to Supabase. Firebase Firestore is inactive.
-                      </p>
-                    </div>
+                    <p className="text-2xs text-zinc-400 leading-normal">
+                      Utilize standard SQL database schema, PostgreSQL connection pools, real relational tables for tested slot reviews, and custom connection string overrides.
+                    </p>
                   </div>
                 </div>
 
@@ -1911,7 +1890,7 @@ export default function AdminDashboard() {
                     <div className="text-2xs space-y-1.5 font-bold">
                       <div className="flex justify-between items-center py-1 border-b border-zinc-900">
                         <span className="text-zinc-500">PROVIDER</span>
-                        <span className="text-indigo-400 uppercase font-extrabold">{dbProvider} Integration</span>
+                        <span className="text-indigo-400 uppercase font-extrabold">Supabase Integration</span>
                       </div>
                       <div className="flex justify-between items-center py-1 border-b border-zinc-900">
                         <span className="text-zinc-500">LIVE SYNC</span>
@@ -1923,7 +1902,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <p className="text-2xs text-zinc-500 leading-normal pt-2">
-                      💡 Changing database provider dynamically switches the operations context on the backend. Slot applications default seed data is automatically written in your newly activated Firestore db collections on first load.
+                      💡 Secured database connection dynamically synchronized with PostgreSQL. Admin credentials and transaction lists process in real-time.
                     </p>
                   </div>
 
