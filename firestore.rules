@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper: Auth Check
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checking if the account email is verified and authorized
+    function isValidId(id) {
+       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper: Check if document has expected admin status
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'zainalipri@gmail.com' ||
+        request.auth.token.email == 'zainalipro83@gmail.com' ||
+        request.auth.token.email == 'pakalone.online@gmail.com' ||
+        request.auth.token.email.endsWith('@pakalone.online')
+      );
+    }
+
+    // Validation helper: Apps Collection
+    function isValidApp(data) {
+      return data.keys().hasAll(['name', 'logo', 'tagline', 'rating', 'apkUrl', 'detailedReview']) &&
+             data.name is string && data.name.size() <= 200 &&
+             data.logo is string && data.logo.size() <= 10 &&
+             data.tagline is string && data.tagline.size() <= 300 &&
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             data.apkUrl is string && data.apkUrl.size() <= 500 &&
+             data.detailedReview is string && data.detailedReview.size() <= 5000;
+    }
+
+    // Validation helper: Settings
+    function isValidSetting(data) {
+      return data.keys().hasAll(['value']) &&
+             data.value is string && data.value.size() <= 2048;
+    }
+
+    // Validation helper: Subscriber
+    function isValidSubscriber(data) {
+      return data.keys().hasAll(['email']) &&
+             data.email is string && data.email.size() <= 255;
+    }
+
+    // Validation helper: Message
+    function isValidMessage(data) {
+      return data.keys().hasAll(['email', 'message']) &&
+             data.email is string && data.email.size() <= 255 &&
+             data.message is string && data.message.size() <= 10000;
+    }
+
+    // Matches for /apps/{appId}
+    match /apps/{appId} {
+      allow read: if true; // Public access for viewing slots apps list
+      allow create, update: if isAdmin() && isValidApp(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Matches for /admin_settings/{settingId}
+    match /admin_settings/{settingId} {
+      allow read, write: if isAdmin() && isValidSetting(request.resource.data);
+    }
+
+    // Matches for /subscribers/{subscriberId}
+    match /subscribers/{subscriberId} {
+      allow read: if isAdmin();
+      allow create: if true; // Public can subscribe
+      allow update, delete: if isAdmin();
+    }
+
+    // Matches for /user_messages/{messageId}
+    match /user_messages/{messageId} {
+      allow read: if isAdmin();
+      allow create: if true; // Public can send support messages
+      allow update, delete: if isAdmin();
+    }
+  }
+}

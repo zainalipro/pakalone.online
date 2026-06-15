@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "app": {
+      "title": "Tested Application",
+      "description": "Information about a thoroughly vetted, legal slots game registration inside Pakistan.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Display name of the slots platform" },
+        "logo": { "type": "string", "description": "Single icon emoji character" },
+        "badge": { "type": "string", "description": "Optional recommended or special status badge text" },
+        "tagline": { "type": "string", "description": "Brief catchphrase highlighting earnings ratio" },
+        "rating": { "type": "number", "description": "Operator rating score out of 5" },
+        "downloads": { "type": "string", "description": "Vetted downloader size or active users" },
+        "apkSize": { "type": "string", "description": "Memory required for download" },
+        "minCashout": { "type": "string", "description": "Minimum Pakistani Rupees needed for manual or automatic cashouts" },
+        "dailyUsers": { "type": "string", "description": "Logged live participants estimation" },
+        "methods": { "type": "array", "description": "Supported payout wallets or local banks" },
+        "apkUrl": { "type": "string", "description": "Secure file distribution url" },
+        "detailedReview": { "type": "string", "description": "Full platform pros, payouts, and customer reviews written in English" },
+        "detailedReviewUrdu": { "type": "string", "description": "Review written in Urdu for local accessibility" },
+        "pros": { "type": "array", "description": "Key benefits" },
+        "cons": { "type": "array", "description": "Platform drawbacks" },
+        "previewImages": { "type": "array", "description": "App screenshots urls list" },
+        "videoUrl": { "type": "string", "description": "Optional video walkthrough url" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "logo", "tagline", "rating", "apkUrl", "detailedReview"]
+    },
+    "setting": {
+      "title": "SMTP configuration parameter",
+      "description": "Specific SMTP pipeline variable key and encrypted payload values.",
+      "type": "object",
+      "properties": {
+        "value": { "type": "string" }
+      },
+      "required": ["value"]
+    },
+    "subscriber": {
+      "title": "User Subscription Email",
+      "description": "Subscribed newsletter recipient address.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "subscribedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email"]
+    },
+    "message": {
+      "title": "Customer Enquiry Message",
+      "description": "Client feedback, help request, or security compliance complaint.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "message"]
+    }
+  },
+  "firestore": {
+    "/apps/{appId}": {
+      "schema": { "$ref": "#/entities/app" },
+      "description": "Vetted apps database collection"
+    },
+    "/admin_settings/{settingId}": {
+      "schema": { "$ref": "#/entities/setting" },
+      "description": "Local server administrative parameters"
+    },
+    "/subscribers/{subscriberId}": {
+      "schema": { "$ref": "#/entities/subscriber" },
+      "description": "Active news reader subscriptions emails"
+    },
+    "/user_messages/{messageId}": {
+      "schema": { "$ref": "#/entities/message" },
+      "description": "Customer contact complaints and submitted support tickets"
+    }
+  }
+}

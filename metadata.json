@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Lucky Jackpot",
+  "description": "Premium Pakistani gaming review portal, real-time arcade game simulators, affiliate download directories, and advertising spaces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
