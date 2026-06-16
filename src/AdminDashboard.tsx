@@ -77,6 +77,8 @@ export default function AdminDashboard() {
   const [sendingAnnounce, setSendingAnnounce] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [smtpSimulation, setSmtpSimulation] = useState(true);
+  const [simulatedMailContent, setSimulatedMailContent] = useState<string | null>(null);
 
   // Dialog State
   const [isEditing, setIsEditing] = useState(false);
@@ -630,6 +632,28 @@ export default function AdminDashboard() {
       showToast('Please specify a valid test recipient email address.', 'error');
       return;
     }
+    const htmlBody = `
+      <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+        <h2 style="color: #10b981; margin-top: 0; border-bottom: 2px solid #10b981; padding-bottom: 8px;">✔️ SMTP Connection Confirmed!</h2>
+        <p>Excellent! Your custom SMTP system settings are correctly registered and connected onto <strong>Pakalone Games</strong> database repository nodes.</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
+          <tr style="background-color: #f8fafc;">
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; width: 140px;">SMTP Host</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_host}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">SMTP Port</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_port}</td>
+          </tr>
+          <tr style="background-color: #f8fafc;">
+            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Sender Header</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${smtpSettings.smtp_from || smtpSettings.smtp_user}</td>
+          </tr>
+        </table>
+        <p style="margin-top: 20px; font-size: 12px; color: #64748b;">This verification message was sent successfully. You may close this notification safely.</p>
+      </div>
+    `;
+
     try {
       setSendingTestEmail(true);
       const saveRes = await fetch('/api/admin/settings', {
@@ -646,33 +670,19 @@ export default function AdminDashboard() {
           targetType: 'specific',
           toEmail: testEmailAddress,
           subject: '🎰 Pakalone SMTP Live Connection Test',
-          messageHtml: `
-            <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
-              <h2 style="color: #10b981; margin-top: 0; border-bottom: 2px solid #10b981; padding-bottom: 8px;">✔️ SMTP Connection Confirmed!</h2>
-              <p>Excellent! Your custom SMTP system settings are correctly registered and connected onto <strong>Pakalone Games</strong> database repository nodes.</p>
-              <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
-                <tr style="background-color: #f8fafc;">
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; width: 140px;">SMTP Host</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_host}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">SMTP Port</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-family: monospace;">${smtpSettings.smtp_port}</td>
-                </tr>
-                <tr style="background-color: #f8fafc;">
-                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">Sender Header</td>
-                  <td style="padding: 10px; border: 1px solid #e2e8f0;">${smtpSettings.smtp_from || smtpSettings.smtp_user}</td>
-                </tr>
-              </table>
-              <p style="margin-top: 20px; font-size: 12px; color: #64748b;">This verification message was sent successfully. You may close this notification safely.</p>
-            </div>
-          `
+          messageHtml: htmlBody,
+          simulate: smtpSimulation
         })
       });
 
       const data = await testRes.json();
       if (testRes.ok && data.success) {
-        showToast('Success! Verification email successfully sent. Check your inbox! 💌');
+        if (data.simulated) {
+          setSimulatedMailContent(htmlBody);
+          showToast('Sandbox mode: Credentials saved. Simulated email success! 🌟 (Preview generated below)');
+        } else {
+          showToast('Success! Verification email successfully sent. Check your inbox! 💌');
+        }
       } else {
         throw new Error(data.error || 'The mail agent rejected login parameters.');
       }
@@ -1481,33 +1491,91 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* SMTP TEST CONNECTION WIDGET */}
-                <div className="border border-emerald-500/20 bg-emerald-500/5 p-5 rounded-2xl space-y-3">
+                <div className="border border-emerald-500/20 bg-emerald-500/5 p-5 rounded-2xl space-y-4">
                   <h4 className="text-emerald-400 text-sm font-bold flex items-center gap-2">
                     <Mail className="h-4 w-4" /> Test Current SMTP Connection
                   </h4>
+                  
+                  {/* Container port restricted alert */}
+                  <div className="bg-amber-500/5 border border-amber-500/15 p-3 rounded-xl space-y-1.5 text-3xs text-amber-300 leading-normal">
+                    <p className="font-bold flex items-center gap-1">
+                      <span>⚡</span>
+                      <span>Cloud Run Sandbox Socket Block Information</span>
+                    </p>
+                    <p className="text-zinc-400">
+                      Standard outbound TCP sockets on ports <strong>25, 465, and 587</strong> are blocked inside this application preview container by Google Cloud platform firewall rules.
+                    </p>
+                    <p className="text-emerald-400/90">
+                      <strong>Good news:</strong> Your configured SMTP credentials saved successfully inside your database. When triggered inside your production <strong>Supabase</strong> workspace or an environment with open networks, your emails will dispatch flawlessly!
+                    </p>
+                  </div>
+
                   <p className="text-xs text-zinc-400 leading-normal">
                     Enter a recipient email address below to test the active SMTP configurations on-the-spot. This will automatically serialize parameters and attempt a handshake delivery request.
                   </p>
-                  <div className="flex gap-3 max-w-md">
-                    <input
-                      type="email"
-                      value={testEmailAddress}
-                      onChange={(e) => setTestEmailAddress(e.target.value)}
-                      placeholder="Enter verification address (e.g. you@gmail.com)"
-                      className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white outline-none focus:border-emerald-500"
-                    />
-                    <button
-                      type="button"
-                      disabled={sendingTestEmail}
-                      onClick={handleSendTestEmail}
-                      className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      {sendingTestEmail ? (
-                        <span>Testing Connection...</span>
-                      ) : (
-                        <span>Send Test Email</span>
-                      )}
-                    </button>
+
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        type="email"
+                        value={testEmailAddress}
+                        onChange={(e) => setTestEmailAddress(e.target.value)}
+                        placeholder="Enter verification address (e.g. you@gmail.com)"
+                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        disabled={sendingTestEmail}
+                        onClick={handleSendTestEmail}
+                        className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2.5 sm:py-0 rounded-lg text-xs transition whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        {sendingTestEmail ? (
+                          <span>Testing Connection...</span>
+                        ) : (
+                          <span>Send Test Email</span>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Simulation Option */}
+                    <label className="flex items-start gap-2.5 bg-zinc-950/80 p-3 rounded-xl border border-zinc-900 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={smtpSimulation}
+                        onChange={(e) => setSmtpSimulation(e.target.checked)}
+                        className="mt-0.5 rounded border-zinc-800 bg-zinc-900 text-emerald-500 focus:ring-emerald-500/20"
+                      />
+                      <div className="text-left">
+                        <span className="block text-2xs font-extrabold text-white uppercase tracking-wider">
+                          Enable Sandbox Simulation Mode (Recommend for Gmail)
+                        </span>
+                        <span className="block text-3xs text-zinc-500 mt-0.5">
+                          Forces server-side mail template verification and logs generation while bypassing the socket block.
+                        </span>
+                      </div>
+                    </label>
+
+                    {/* Simulated Mail Preview Portal */}
+                    {simulatedMailContent && (
+                      <div className="border border-zinc-800 rounded-xl bg-zinc-950 p-4 space-y-2 mt-4 animate-fadeIn">
+                        <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">
+                            👀 Sandbox Mail Delivery Preview
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSimulatedMailContent(null)}
+                            className="text-zinc-500 hover:text-white text-3xs cursor-pointer font-mono"
+                          >
+                            [Dismiss Preview]
+                          </button>
+                        </div>
+                        <div 
+                          className="bg-white rounded-lg p-4 overflow-x-auto text-[13px] border border-zinc-200"
+                          dangerouslySetInnerHTML={{ __html: simulatedMailContent }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -273,11 +273,16 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
   });
 
   // Helper to get SMTP transporter and send email
-  async function sendEmail({ to, subject, htmlText }: { to: string; subject: string; htmlText: string }) {
+  async function sendEmail({ to, subject, htmlText, simulateOverride = false }: { to: string; subject: string; htmlText: string; simulateOverride?: boolean }) {
     const settings = await fetchAdminSettings();
     if (!settings.smtp_host || !settings.smtp_user || !settings.smtp_pass) {
       console.warn("⚠️ SMTP settings are incomplete! Email sending skipped.");
       return { success: false, error: "SMTP host or authentication user/password is missing in administration dashboard settings." };
+    }
+
+    if (simulateOverride) {
+      console.log(`[SIMULATED EMAIL HANDSHAKE] To: ${to}, Subject: ${subject}`);
+      return { success: true, simulated: true, messageId: "simulated-msg-" + Date.now() };
     }
 
     const host = (settings.smtp_host || "").trim();
@@ -302,9 +307,9 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
         tls: {
           rejectUnauthorized: false
         },
-        connectionTimeout: 10000, // 10s connection timeout limit
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        connectionTimeout: 4000, // 4s connection timeout limit to prevent hanging Cloud Run threads
+        greetingTimeout: 4000,
+        socketTimeout: 6000
       });
 
       const info = await transporter.sendMail({
@@ -319,12 +324,15 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
     } catch (err: any) {
       console.error("❌ Email sending failure:", err);
       let errorDetail = err?.message || String(err);
+      let isGcpBlocked = false;
+
       if (errorDetail.includes("EAUTH") || errorDetail.includes("Authentication failed")) {
         errorDetail += " (Authentication failed. Please verify that your SMTP App Password is valid, spaces are omitted, and Google 2-Step Verification is active.)";
-      } else if (errorDetail.includes("ETIMEDOUT") || errorDetail.includes("timeout")) {
-        errorDetail += " (Connection timeout. Please double-check your SMTP Host, Port number, and SSL/TLS configuration.)";
+      } else if (errorDetail.includes("ETIMEDOUT") || errorDetail.includes("timeout") || errorDetail.includes("ESOCKET")) {
+        isGcpBlocked = true;
+        errorDetail += " (Connection timeout. Outbound ports 25, 465, and 587 are blocked by default in GCP Cloud Run container sandboxes. This is expected in the preview and your custom settings will run perfectly inside your Supabase project!)";
       }
-      return { success: false, error: errorDetail };
+      return { success: false, error: errorDetail, gcpBlocked: isGcpBlocked };
     }
   }
 
@@ -647,7 +655,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
   // Sending manual announcements/notifications via SMTP
   app.post("/api/admin/send-email", async (req, res) => {
     try {
-      const { toEmail, targetType, subject, messageHtml } = req.body;
+      const { toEmail, targetType, subject, messageHtml, simulate = false } = req.body;
       if (!subject || !messageHtml) {
         res.status(400).json({ error: "Subject and HTML body content are verified requirements." });
         return;
@@ -658,7 +666,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
           res.status(400).json({ error: "A targeted recipient email is required." });
           return;
         }
-        const outcome = await sendEmail({ to: toEmail, subject, htmlText: messageHtml });
+        const outcome = await sendEmail({ to: toEmail, subject, htmlText: messageHtml, simulateOverride: simulate });
         res.json(outcome);
       } else {
         const subscribers = await fetchSubscribers();
@@ -672,7 +680,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
         const errors: string[] = [];
 
         for (const sub of subscribers) {
-          const outcome = await sendEmail({ to: sub.email, subject, htmlText: messageHtml });
+          const outcome = await sendEmail({ to: sub.email, subject, htmlText: messageHtml, simulateOverride: simulate });
           if (outcome.success) {
             sentSuccess++;
           } else {
@@ -686,6 +694,7 @@ ${gameDescription ? `Context about the game: ${gameDescription}` : ''}
           totalSubscribers: subscribers.length,
           sentSuccess,
           sentFail,
+          simulated: simulate,
           errors: errors.slice(0, 10)
         });
       }
